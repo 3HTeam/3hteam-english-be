@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { ExamType, ScoreType, SectionType } from "@prisma/client";
+import { ExamPurpose, ExamType, ScoreType, SectionType } from "@prisma/client";
 import {
   IsArray,
   IsBoolean,
@@ -105,10 +105,14 @@ export class CreateExamDto {
   @IsNotEmpty()
   scoreType: ScoreType;
 
-  @ApiProperty({ description: "ID cấp độ", example: "uuid-level-id" })
-  @IsUUID()
+  @ApiProperty({
+    description: "Mục đích bài thi",
+    enum: ExamPurpose,
+    example: ExamPurpose.MOCK_TEST,
+  })
+  @IsEnum(ExamPurpose)
   @IsNotEmpty()
-  levelId: string;
+  purpose: ExamPurpose;
 
   @ApiPropertyOptional({
     description: "Danh sách phần thi (tạo cùng lúc)",

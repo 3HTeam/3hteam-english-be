@@ -14,7 +14,6 @@ import { Exam, Prisma } from "@prisma/client";
 import { PaginationDto, PaginationMeta } from "src/common/dto/pagination.dto";
 
 const EXAM_INCLUDE = {
-  level: true,
   sections: {
     orderBy: { order: "asc" as const },
     include: {
@@ -40,26 +39,19 @@ export class ExamAdminService {
 
   async create(dto: CreateExamDto, userId?: string): Promise<Exam> {
     try {
-      const level = await this.prisma.level.findUnique({
-        where: { id: dto.levelId },
-      });
-      if (!level) {
-        throw new BadRequestException("Cấp độ không tồn tại");
-      }
-
       const exam = await this.prisma.exam.create({
         data: {
           title: dto.title,
           description: dto.description,
           imageUrl: dto.imageUrl,
           examType: dto.examType,
+          purpose: dto.purpose,
           duration: dto.duration,
           totalQuestions: dto.totalQuestions,
           maxScore: dto.maxScore,
           scoreType: dto.scoreType,
           status: dto.status ?? true,
           createdBy: userId,
-          levelId: dto.levelId,
           ...(dto.sections && {
             sections: {
               create: dto.sections.map((s) => ({
@@ -138,15 +130,6 @@ export class ExamAdminService {
         throw new NotFoundException("Không tìm thấy đề thi");
       }
 
-      if (dto.levelId) {
-        const level = await this.prisma.level.findUnique({
-          where: { id: dto.levelId },
-        });
-        if (!level) {
-          throw new BadRequestException("Cấp độ không tồn tại");
-        }
-      }
-
       const updateData: Prisma.ExamUpdateInput = {
         updatedAt: new Date().toISOString(),
       };
@@ -156,15 +139,13 @@ export class ExamAdminService {
         updateData.description = dto.description;
       if (dto.imageUrl !== undefined) updateData.imageUrl = dto.imageUrl;
       if (dto.examType !== undefined) updateData.examType = dto.examType;
+      if (dto.purpose !== undefined) updateData.purpose = dto.purpose;
       if (dto.duration !== undefined) updateData.duration = dto.duration;
       if (dto.totalQuestions !== undefined)
         updateData.totalQuestions = dto.totalQuestions;
       if (dto.maxScore !== undefined) updateData.maxScore = dto.maxScore;
       if (dto.scoreType !== undefined) updateData.scoreType = dto.scoreType;
       if (dto.status !== undefined) updateData.status = dto.status;
-      if (dto.levelId !== undefined) {
-        updateData.level = { connect: { id: dto.levelId } };
-      }
 
       return await this.prisma.exam.update({
         where: { id },

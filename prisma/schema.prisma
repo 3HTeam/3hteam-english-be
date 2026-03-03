@@ -182,7 +182,6 @@ model Level {
   users User[]
 
   exercises Exercise[]
-  exams     Exam[]
 
   @@index([cefrLevel])
   @@index([status])
@@ -425,6 +424,7 @@ model Exam {
   description    String?
   imageUrl       String?
   examType       ExamType
+  purpose        ExamPurpose  @default(MOCK_TEST)
   duration       Int // tổng thời gian (phút)
   totalQuestions Int
   maxScore       Int // TOEIC: 990, IELTS: 9
@@ -436,14 +436,11 @@ model Exam {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  levelId String
-  level   Level  @relation(fields: [levelId], references: [id], onDelete: Restrict)
-
   sections  ExamSection[]
   userExams UserExam[]
 
-  @@index([levelId])
   @@index([examType])
+  @@index([purpose])
   @@index([status])
 }
 
@@ -600,6 +597,13 @@ enum PushTokenType {
 enum ExamType {
   TOEIC
   IELTS
+}
+
+enum ExamPurpose {
+  PLACEMENT // Bài đánh giá trình độ
+  MOCK_TEST // Bài thi thử TOEIC/IELTS
+  REVIEW    // Bài ôn tập (ngữ pháp, từ vựng,...)
+  PRACTICE  // Bài luyện tập
 }
 
 enum ScoreType {
